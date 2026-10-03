@@ -1,6 +1,7 @@
 package com.bonfigli.storeapp.data
 
 import com.bonfigli.storeapp.domain.Product
+import com.bonfigli.storeapp.domain.ProductResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -13,10 +14,10 @@ class FakeStoreHttpClient(
 ) {
     suspend fun getProducts(): List<Product> {
         return try {
-            client.get("https://fakestoreapi.com/products").body()
+            val response: ProductResponse = client.get("https://fakestoreapi.noksha.dev/api/products").body()
+            response.data
         } catch (e: Exception) {
-            e.printStackTrace()
-            emptyList()
+            throw e // Esto lanza el error hacia arriba para que App.kt lo pueda agarrar
         }
     }
 

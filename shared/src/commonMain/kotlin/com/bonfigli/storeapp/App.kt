@@ -1,5 +1,6 @@
 package com.bonfigli.storeapp
-
+import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.*
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,35 +22,30 @@ import androidx.compose.ui.tooling.preview.Preview
 import mistoreapp.shared.generated.resources.Res
 import mistoreapp.shared.generated.resources.compose_multiplatform
 import org.jetbrains.compose.resources.painterResource
-
+import com.bonfigli.storeapp.data.FakeStoreHttpClient
+import com.bonfigli.storeapp.domain.Product
 @Composable
 @Preview
 fun App() {
     MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("¡Haz clic aquí!")
+        var textoPantalla by remember { mutableStateOf("Cargando productos de la API...") }
+
+        LaunchedEffect(Unit) {
+            try {
+                val cliente = FakeStoreHttpClient()
+                val productos = cliente.getProducts()
+
+                val primerProducto = productos.firstOrNull()
+                textoPantalla = "¡Éxito! Se descargaron ${productos.size} productos.\n\n" +
+                        "El primero es: ${primerProducto?.title ?: "Sin título"}\n" +
+                        "Marca: ${primerProducto?.brand ?: "Sin marca"} | Precio: $${primerProducto?.price ?: 0.0}"
+            } catch (e: Throwable) {
+                textoPantalla = "Error fatal: ${e::class.simpleName}\nDetalle: ${e.message}"
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(
-                        painter = painterResource(Res.drawable.compose_multiplatform),
-                        contentDescription = null,
-                    )
-                    Text("Compose: $greeting")
-                }
-            }
+        }
+
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(text = textoPantalla)
         }
     }
 }
