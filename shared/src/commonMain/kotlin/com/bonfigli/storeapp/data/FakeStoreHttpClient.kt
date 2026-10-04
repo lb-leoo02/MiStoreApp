@@ -17,7 +17,7 @@ class FakeStoreHttpClient(
             val response: ProductResponse = client.get("https://fakestoreapi.noksha.dev/api/products").body()
             response.data
         } catch (e: Exception) {
-            throw e // Esto lanza el error hacia arriba para que App.kt lo pueda agarrar
+            throw e
         }
     }
 
