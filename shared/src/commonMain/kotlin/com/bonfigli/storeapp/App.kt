@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
@@ -39,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -110,7 +112,8 @@ fun App(
                                         Text(
                                             text = "Mi Store App",
                                             fontWeight = FontWeight.ExtraBold,
-                                            style = MaterialTheme.typography.titleLarge
+                                            style = MaterialTheme.typography.titleLarge,
+                                            color = Color(0xFFF8FAFC)
                                         )
                                     },
                                     actions = {
@@ -123,7 +126,8 @@ fun App(
                                                     ) {
                                                         Text(
                                                             text = if (totalCartCount > 99) "99+" else totalCartCount.toString(),
-                                                            fontWeight = FontWeight.Bold
+                                                            fontWeight = FontWeight.Bold,
+                                                            color = Color.White
                                                         )
                                                     }
                                                 }
@@ -143,7 +147,7 @@ fun App(
                                     },
                                     colors = TopAppBarDefaults.topAppBarColors(
                                         containerColor = Color(0xFF11141E).copy(alpha = 0.75f),
-                                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                                        titleContentColor = Color(0xFFF8FAFC)
                                     )
                                 )
                             }
@@ -160,12 +164,14 @@ fun App(
                                             horizontalAlignment = Alignment.CenterHorizontally,
                                             verticalArrangement = Arrangement.Center
                                         ) {
-                                            CircularProgressIndicator()
+                                            CircularProgressIndicator(
+                                                color = MaterialTheme.colorScheme.primary
+                                            )
                                             Spacer(modifier = Modifier.height(16.dp))
                                             Text(
                                                 text = "Cargando catálogo...",
                                                 style = MaterialTheme.typography.bodyMedium,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                color = Color(0xFFCBD5E1)
                                             )
                                         }
                                     }
@@ -191,16 +197,28 @@ fun App(
                                                 text = "¡Ups! Ocurrió un problema",
                                                 style = MaterialTheme.typography.titleLarge,
                                                 fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.error
+                                                color = Color(0xFFEF4444)
                                             )
                                             Spacer(modifier = Modifier.height(8.dp))
                                             Text(
                                                 text = state.message,
-                                                style = MaterialTheme.typography.bodyMedium
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = Color(0xFFE2E8F0),
+                                                textAlign = TextAlign.Center
                                             )
-                                            Spacer(modifier = Modifier.height(16.dp))
-                                            Button(onClick = { productListViewModel.loadProducts() }) {
-                                                Text("Reintentar")
+                                            Spacer(modifier = Modifier.height(18.dp))
+                                            Button(
+                                                onClick = { productListViewModel.loadProducts() },
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primary,
+                                                    contentColor = Color.White
+                                                )
+                                            ) {
+                                                Text(
+                                                    text = "Reintentar",
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = Color.White
+                                                )
                                             }
                                         }
                                     }
