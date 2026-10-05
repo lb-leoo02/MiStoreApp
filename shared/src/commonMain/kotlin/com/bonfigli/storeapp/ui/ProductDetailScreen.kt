@@ -12,7 +12,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -34,10 +33,10 @@ import coil3.compose.AsyncImage
 import com.bonfigli.storeapp.domain.Product
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductDetailScreen(
     product: Product,
+    onAddToCart: (Product) -> Unit,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -68,8 +67,9 @@ fun ProductDetailScreen(
             ) {
                 Button(
                     onClick = {
+                        onAddToCart(product)
                         scope.launch {
-                            snackbarHostState.showSnackbar("¡Producto agregado al carrito!")
+                            snackbarHostState.showSnackbar("¡${product.title} agregado al carrito!")
                         }
                     },
                     modifier = Modifier
