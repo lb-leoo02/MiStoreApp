@@ -14,7 +14,7 @@ Aplicación móvil de e-commerce multiplataforma (Android & iOS) desarrollada co
 2. [Stack Tecnológico y Librerías](#stack-tecnológico-y-librerías)
 3. [Arquitectura del Software](#arquitectura-del-software)
 4. [Características Principales](#características-principales)
-5. [Orquestación de IA y Criterio de Ingeniería](#orquestación-de-ia-y-criterio-de-ingeniería)
+5. [Orquestación de IA y Bitácora de Prompts](#orquestación-de-ia-y-bitácora-de-prompts)
 6. [Pruebas Unitarias (Unit Testing)](#pruebas-unitarias-unit-testing)
 7. [Cómo Compilar y Ejecutar el Proyecto](#cómo-compilar-y-ejecutar-el-proyecto)
 
@@ -31,7 +31,7 @@ El proyecto está diseñado desde cero aplicando Clean Architecture y el patrón
 ## Stack Tecnológico y Librerías
 
 * **Lenguaje:** Kotlin 2.4.20 (Multiplatform)
-* **UI Declarativa:** Compose Multiplatform (Material 3)
+* **UI Declarativa:** Compose Multiplatform (Material 3 con tema Dark Glassmorphism)
 * **Cliente de Red (HTTP):** Ktor Client 3.6.0 (`ktor-client-core`, `ktor-client-okhttp`, `ktor-client-darwin`)
 * **Serialización de Datos:** `kotlinx.serialization` (JSON parsing)
 * **Carga de Imágenes Remotas:** Coil 3.1.0 (`coil-compose`, `coil-network-ktor3`)
@@ -74,19 +74,55 @@ shared/
   * Modificación de cantidades (+ / -) y eliminación de productos.
   * Cálculo dinámico del total acumulado.
   * Diálogo modal para simulación de compra y vaciado automático.
+* **Diseño Dark Glassmorphism y Animaciones:** Paleta de colores en tonos oscuros con degradados y transiciones animadas entre pantallas (`AnimatedContent`).
 * **Manejo de Errores y Tolerancia a Fallas:** Intercepción de problemas de red (sin internet o caída de servidor) con pantalla descriptiva y botón de "Reintentar".
 
 ---
 
-## Orquestación de IA y Criterio de Ingeniería
+## Orquestación de IA y Bitácora de Prompts
 
-En cumplimiento con las consignas del challenge, el desarrollo acelerado de este proyecto se potenció utilizando asistentes de Inteligencia Artificial (Gemini en Android Studio & Antigravity) actuando como copilotos.
+En cumplimiento con el requisito fundamental del challenge, el desarrollo acelerado de este proyecto se potenció utilizando herramientas de Inteligencia Artificial actuando como copilotos de ingeniería:
 
-### Auditoría Técnica y Decisiones tomadas sobre las sugerencias de la IA:
+* **Google Gemini 3.6 Flash / Pro:** Modelo de lenguaje principal para diseño de arquitectura, refactorización y lógica de negocio.
+* **Antigravity AI Agent:** Agente especializado para asistencia en pair programming, auditoría de compilación y pruebas unitarias.
+* **Android Studio Gemini Bot:** Asistente integrado en el IDE para generación rápida de UI y configuración de Gradle.
 
-1. **Rechazo de Retrofit en KMP:** Ante sugerencias iniciales de usar librerías exclusivas de Android (como Retrofit o Glide), se instruyó a la IA a utilizar alternativas 100% multiplataforma como Ktor Client y Coil 3.
+### Auditoría Técnica del Ingeniero
+
+El valor agregado como desarrollador radicó en guiar a la IA, auditar su código y resolver problemas de integración que los generadores ignoraron:
+1. **Rechazo de Retrofit/Glide en KMP:** Ante sugerencias iniciales de usar librerías exclusivas de Android, se instruyó a la IA a utilizar alternativas 100% multiplataforma como Ktor Client y Coil 3.
 2. **Solución del Botón Atrás (UX Android):** La IA generó un cambio de estado simple para la navegación que provocaba que la app se cerrara al presionar "Atrás" en Android. Audité el comportamiento y diseñé la abstracción `expect / actual BackHandler` para solucionar la navegación nativa.
-3. **Formateo de Moneda sin librerías pesadas:** En lugar de agregar librerías de terceros para formatear precios, creé una extensión personalizada `Double.formatPrice()` para asegurar dos decimales precisos.
+3. **Formateo de Moneda:** Creación de la extensión `Double.formatPrice()` para asegurar dos decimales precisos sin librerías externas pesadas.
+
+---
+
+### Bitácora de Prompts Utilizados
+
+#### Día 1: Setup, Repositorio y Cliente de Red (Ktor)
+* **Prompt para Gradle KMP:**
+  > "Estoy haciendo un proyecto en Kotlin Multiplatform con UI compartida en Compose. Necesito consumir la FakeStore API. ¿Me podés dar exactamente el bloque de código que tengo que agregar en mi archivo build.gradle.kts (dentro del sourceSets commonMain.dependencies) para incluir Ktor Client (core, content-negotiation y kotlinx-json) y Kotlinx Serialization? Dame solo las dependencias necesarias para KMP."
+* **Prompt para Dominio (Product.kt):**
+  > "Basado en este JSON de FakeStore: `[{"id":1,"title":"Remera","price":10.0,"category":"ropa","image":"url","rating":{"rate":4.5,"count":10}}]`, generame los 'data class' en Kotlin Multiplatform usando `@Serializable`. Ponelos en un archivo llamado Product.kt."
+* **Prompt para Cliente HTTP (FakeStoreHttpClient.kt):**
+  > "Ahora generame un FakeStoreHttpClient usando Ktor Client en Kotlin Multiplatform. Necesito que tenga un método suspendido `getProducts(): List<Product>` que le pegue a `https://fakestoreapi.com/products`. Asegurate de configurar el plugin de ContentNegotiation con JSON e ignorar las keys desconocidas (`ignoreUnknownKeys = true`). Incluí manejo de errores básico con try-catch."
+
+#### Día 2: Arquitectura MVVM, Gestión de Estado y Unit Tests
+* **Prompt para Estados de UI (ProductUiState.kt):**
+  > "En Kotlin Multiplatform, necesito definir una sealed interface llamada `ProductUiState` para representar los estados de la pantalla del catálogo de productos según la arquitectura MVVM: `Loading`, `Success(products: List<Product>)` y `Error(message: String)`. Usá `data object` para el estado de carga."
+* **Prompt para ViewModel (ProductListViewModel.kt):**
+  > "Generame un `ProductListViewModel` en Kotlin Multiplatform que herede de `androidx.lifecycle.ViewModel`. Debe exponer un `StateFlow<ProductUiState>` reactivo y consumir `FakeStoreHttpClient`. En la función `loadProducts()`, usá `viewModelScope.launch` para actualizar los estados. Agregá un try-catch que clasifique los errores de red (Socket, Host, Conexión) y devuelva un mensaje comprensible como 'Sin conexión a Internet'."
+* **Prompt para la Vista Principal (App.kt):**
+  > "Actualizá mi componente `@Composable fun App()` en Compose Multiplatform para que consuma el `ProductListViewModel` usando `collectAsState()`. Diseñá una UI con Material 3 que use Scaffold y TopAppBar. Si el estado es Loading, mostrá un `CircularProgressIndicator`. Si es Success, renderizá una `LazyColumn` con tarjetas (`Card`) para cada producto. Si es Error, mostrá un mensaje de error con un botón de 'Reintentar' que vuelva a llamar al ViewModel."
+* **Prompt para Pruebas Unitarias (ProductSerializationTest.kt):**
+  > "Escribí un test unitario para Kotlin Multiplatform en la carpeta `commonTest` usando `kotlin.test`. El test debe llamarse `ProductSerializationTest` y debe verificar que una cadena JSON de muestra de la API FakeStore se deserialice correctamente en el modelo `ProductResponse` utilizando `kotlinx.serialization`."
+
+#### Día 3: Navegación, Carga de Imágenes y Filtro en Tiempo Real
+* **Prompt para Coil 3 y Navegación:**
+  > "Estoy desarrollando un proyecto en Kotlin Multiplatform (KMP) con Compose Multiplatform. Actualmente tengo un ProductListViewModel y la data class Product que tiene un campo `image: String?` con URLs de imágenes. Necesito implementar dos funcionalidades: 1. Configurar la librería Coil 3 (`io.coil-kt.coil3`) para Compose Multiplatform en `libs.versions.toml` y `shared/build.gradle.kts` para poder renderizar imágenes desde URLs de la red en commonMain usando `AsyncImage`. 2. Crear un sistema de navegación sencillo en Compose Multiplatform con 2 pantallas: Catálogo (`ProductListScreen`) y Detalle del Producto (`ProductDetailScreen`)."
+
+#### Día 4: Carrito de Compras, Tests Adicionales y Rediseño Dark Glassmorphism
+* **Prompt para Carrito y Tests:**
+  > "Actualmente tengo 2 pantallas funcionando (Catálogo con buscador e imágenes Coil 3, y Detalle del Producto). Necesito implementar la Pantalla 3: Carrito de Compras y sus tests: 1. Gestión del Carrito (`CartViewModel`): Administrar productos agregados (producto + cantidad), incrementar, decrementar, eliminar y calcular precio total. 2. UI y Navegación (`Screen.Cart`): Ícono de carrito con badge contador en la TopAppBar y `CartScreen.kt` con controles de cantidad y diálogo modal de compra. 3. Pruebas Unitarias para el Carrito en `commonTest` (`CartTest.kt`)."
 
 ---
 
